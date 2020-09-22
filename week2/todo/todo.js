@@ -10,6 +10,7 @@ const TodoController = () => {
     const Todo = () => {                               // facade
         const textAttr = Attribute("text");
         const doneAttr = Attribute(false);
+		const cdate = Attribute("text");
 
         textAttr.setConverter( input => input.toUpperCase() );
         textAttr.setValidator( input => input.length >= 3   );
@@ -20,6 +21,8 @@ const TodoController = () => {
             onDoneChanged:      doneAttr.valueObs.onChange,
             getText:            textAttr.valueObs.getValue,
             setText:            textAttr.setConvertedValue,
+			getCreationDate:	cdate.valueObs.getValue,
+			setCreationDate:	cdate.setConvertedValue,
             onTextChanged:      textAttr.valueObs.onChange,
             onTextValidChanged: textAttr.validObs.onChange,
             /* FIXME changes start */
@@ -35,8 +38,11 @@ const TodoController = () => {
     const selectedTodoModel = Observable();
     const scheduler = Scheduler();
 
+	const getDateString = () => new Date().toLocaleDateString() + ' ('+new Date().toLocaleString('en-us', {weekday:'long'}) + ')';
+
     const addTodo = () => {
         const newTodo = Todo();
+		newTodo.setCreationDate(getDateString());
         todoModel.add(newTodo);
         return newTodo;
     };
@@ -47,6 +53,8 @@ const TodoController = () => {
 
         todoModel.add(newTodo);
         newTodo.setText('...');
+
+		newTodo.setCreationDate(getDateString());
 
         scheduler.add( ok =>
            fortuneService( text => {
@@ -179,17 +187,30 @@ const TodoOpenView = (todoController, numberOfOpenTasksElement) => {
 
 /* FIXME changes start */
 const TodoDetailView = (todoController, detailContainer) => {
-    const [label, inputElement, saveElement, resetElement] = detailContainer.children;
+
+	
+	const dateElement = document.getElementById("creationDateDetail");
+	const saveElement = document.getElementById("saveBtn");
+	const resetElement = document.getElementById("resetBtn");
+	const inputElement = document.getElementById("todoText");
+	const chkbox = document.getElementById("chkbox");	
+	
+
+	console.log(detailContainer.childNodes);
+
     const render = todo => {
         // disable input elements when todo undefined
         [...detailContainer.children].forEach(child => child.disabled = !todo);
         if (!todo) {
             inputElement.value = "";
+			dateElement.value = "";
             return;
         }
 
         inputElement.oninput = _ => todo.setText(inputElement.value);
 
+		dateElement.value = todo.getCreationDate();
+		
 
         todo.onTextChanged(() => inputElement.value = todo.getText());
         todo.onTextValidChanged(
