@@ -27,8 +27,22 @@ const Attribute = value => {
         dirtyObs.setValue(valueObs.getValue() !== persistedValue);
         /* FIXME changes end */
     }
+    /* FIXME changes start */
+    const saveValue = () => {
+        if (!validObs.getValue()) {
+            console.error('save on invalid value called');
+            return;
+        }
+        persistedValue = valueObs.getValue();
+        dirtyObs.setValue(false);
+    }
+    const resetValue = () => {
+        setConvertedValue(persistedValue);
+        saveValue();
+    }
+    /* FIXME changes end */
 
     const setValidator = newValidator => valueObs.onChange( value => validObs.setValue( newValidator(value) ) );
 
-    return { valueObs, validObs, dirtyObs, setConverter, setValidator, setConvertedValue }
+    return { valueObs, validObs, dirtyObs, setConverter, setValidator, setConvertedValue, saveValue, resetValue }
 };

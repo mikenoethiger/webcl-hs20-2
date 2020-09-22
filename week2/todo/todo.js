@@ -17,23 +17,16 @@ const TodoController = () => {
         return {
             getDone:            doneAttr.valueObs.getValue,
             setDone:            doneAttr.valueObs.setValue,
-            /* FIXME changes start */
-            isDoneDirty:        doneAttr.valueObs.isDirty,
-            /* FIXME changes end */
             onDoneChanged:      doneAttr.valueObs.onChange,
             getText:            textAttr.valueObs.getValue,
             setText:            textAttr.setConvertedValue,
-            /* FIXME changes start */
-            isTextDirty:        textAttr.dirtyObs.getValue,
-            onTextDirtyChanged: textAttr.dirtyObs.onChange,
-            /* FIXME changes end */
             onTextChanged:      textAttr.valueObs.onChange,
             onTextValidChanged: textAttr.validObs.onChange,
             /* FIXME changes start */
-            saveChanges:        () => {
-                textAttr.valueObs.save();
-                doneAttr.valueObs.save();
-            }
+            isTextDirty:        textAttr.dirtyObs.getValue,
+            onTextDirtyChanged: textAttr.dirtyObs.onChange,
+            saveText:           textAttr.saveValue,
+            resetText:          textAttr.resetValue,
             /* FIXME changes end */
         }
     };
@@ -67,6 +60,11 @@ const TodoController = () => {
 
     /* FIXME changes start */
     todoModel.onAdd(todo => selectedTodoModel.setValue(todo));
+    todoModel.onDel(removedTodo => {
+        if (removedTodo === selectedTodoModel.getValue()) {
+            selectedTodoModel.setValue(null);
+        }
+    });
     /* FIXME changes end */
 
     return {
@@ -94,44 +92,53 @@ const TodoItemsView = (todoController, rootElement) => {
             const template = document.createElement('DIV'); // only for parsing
             template.innerHTML = `
                 <button class="delete">&times;</button>
-                <input type="text" size="42">
+                <label></label>
                 <input type="checkbox">            
             `;
             return template.children;
         }
-        const [deleteButton, inputElement, checkboxElement] = createElements();
+        const [deleteButton, labelElement, checkboxElement] = createElements();
 
         checkboxElement.onclick = _ => todo.setDone(checkboxElement.checked);
         deleteButton.onclick    = _ => todoController.removeTodo(todo);
 
         todoController.onTodoRemove( (removedTodo, removeMe) => {
             if (removedTodo !== todo) return;
-            rootElement.removeChild(inputElement);
+            rootElement.removeChild(labelElement);
             rootElement.removeChild(deleteButton);
             rootElement.removeChild(checkboxElement);
             removeMe();
         } );
 
-        inputElement.oninput = _ => todo.setText(inputElement.value);
+        // inputElement.oninput = _ => todo.setText(inputElement.value);
 
-        todo.onTextChanged(() => inputElement.value = todo.getText());
+        todo.onTextChanged(() => labelElement.innerText = todo.getText());
 
         /* FIXME changes start */
         todo.onTextDirtyChanged((dirty) => {
             dirty
-                ? inputElement.classList.add("dirty")
-                : inputElement.classList.remove("dirty")
+                ? labelElement.classList.add("dirty")
+                : labelElement.classList.remove("dirty")
+        });
+
+        labelElement.onclick = () => todoController.setSelectedTodo(todo);
+        todoController.onSelectedTodoChange(selectedTodo => {
+            todo === selectedTodo
+                ? labelElement.classList.add("selected")
+                : labelElement.classList.remove("selected")
         });
         /* FIXME changes end */
 
         todo.onTextValidChanged(
             valid => valid
-              ? inputElement.classList.remove("invalid")
-              : inputElement.classList.add("invalid")
+              ? labelElement.classList.remove("invalid")
+              : labelElement.classList.add("invalid")
         );
 
+
+
         rootElement.appendChild(deleteButton);
-        rootElement.appendChild(inputElement);
+        rootElement.appendChild(labelElement);
         rootElement.appendChild(checkboxElement);
     };
 
@@ -172,22 +179,34 @@ const TodoOpenView = (todoController, numberOfOpenTasksElement) => {
 
 /* FIXME changes start */
 const TodoDetailView = (todoController, detailContainer) => {
-    const [textElement, checkboxElement, saveElement, resetElement] = detailContainer.children;
+    const [label, inputElement, saveElement, resetElement] = detailContainer.children;
     const render = todo => {
         // disable input elements when todo undefined
         [...detailContainer.children].forEach(child => child.disabled = !todo);
-        if (!todo) return;
+        if (!todo) {
+            inputElement.value = "";
+            return;
+        }
+
+        inputElement.oninput = _ => todo.setText(inputElement.value);
 
 
-        checkboxElement.onclick = _ => todo.setDone(checkboxElement.checked);
-        textElement.oninput = _ => todo.setText(textElement.value);
-
-        todo.onTextChanged(() => textElement.value = todo.getText());
+        todo.onTextChanged(() => inputElement.value = todo.getText());
         todo.onTextValidChanged(
-            valid => valid
-                ? textElement.classList.remove("invalid")
-                : textElement.classList.add("invalid")
+            valid => {
+                valid
+                    ? inputElement.classList.remove("invalid")
+                    : inputElement.classList.add("invalid");
+                saveElement.disabled = !valid;
+            }
         );
+        todo.onTextDirtyChanged(dirty => {
+            saveElement.disabled = !dirty;
+            resetElement.disabled = !dirty;
+        });
+
+        saveElement.onclick = () => todo.saveText();
+        resetElement.onclick = () => todo.resetText();
     };
 
     // binding

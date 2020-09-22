@@ -47,7 +47,19 @@ input.invalid {
 }
 
 /* FIXME changes start */
-input.dirty {
+#detailContainer {
+    display:        grid;
+    grid-column-gap: 0.5em;
+    grid-template-columns: auto auto auto auto;
+    margin-bottom:  0.5em ;
+}
+label.dirty {
     font-style: italic;
+}
+label.selected {
+    font-weight: bold;
+}
+label.invalid {
+    color: red;
 }
 /* FIXME changes end */
