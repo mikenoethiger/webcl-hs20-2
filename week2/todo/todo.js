@@ -1,9 +1,9 @@
-import { ObservableList } from "../observable/observable.js";
+import { ObservableList, Observable } from "../observable/observable.js";
 import { Attribute }      from "../presentationModel/presentationModel.js";
 import { Scheduler }      from "../dataflow/dataflow.js";
 import { fortuneService } from "./fortuneService.js";
 
-export { TodoController, TodoItemsView, TodoTotalView, TodoOpenView}
+export { TodoController, TodoItemsView, TodoTotalView, TodoOpenView, TodoDetailView}
 
 const TodoController = () => {
 
@@ -17,15 +17,29 @@ const TodoController = () => {
         return {
             getDone:            doneAttr.valueObs.getValue,
             setDone:            doneAttr.valueObs.setValue,
+            /* FIXME changes start */
+            isDoneDirty:        doneAttr.valueObs.isDirty,
+            /* FIXME changes end */
             onDoneChanged:      doneAttr.valueObs.onChange,
             getText:            textAttr.valueObs.getValue,
             setText:            textAttr.setConvertedValue,
+            /* FIXME changes start */
+            isTextDirty:        textAttr.dirtyObs.getValue,
+            onTextDirtyChanged: textAttr.dirtyObs.onChange,
+            /* FIXME changes end */
             onTextChanged:      textAttr.valueObs.onChange,
             onTextValidChanged: textAttr.validObs.onChange,
+            /* FIXME changes start */
+            saveChanges:        () => {
+                textAttr.valueObs.save();
+                doneAttr.valueObs.save();
+            }
+            /* FIXME changes end */
         }
     };
 
     const todoModel = ObservableList([]); // observable array of Todos, this state is private
+    const selectedTodoModel = Observable();
     const scheduler = Scheduler();
 
     const addTodo = () => {
@@ -51,6 +65,10 @@ const TodoController = () => {
 
     };
 
+    /* FIXME changes start */
+    todoModel.onAdd(todo => selectedTodoModel.setValue(todo));
+    /* FIXME changes end */
+
     return {
         numberOfTodos:      todoModel.count,
         numberOfopenTasks:  () => todoModel.countIf( todo => ! todo.getDone() ),
@@ -60,6 +78,8 @@ const TodoController = () => {
         onTodoAdd:          todoModel.onAdd,
         onTodoRemove:       todoModel.onDel,
         removeTodoRemoveListener: todoModel.removeDeleteListener, // only for the test case, not used below
+        setSelectedTodo:    selectedTodoModel.setValue,
+        onSelectedTodoChange: selectedTodoModel.onChange
     }
 };
 
@@ -96,6 +116,14 @@ const TodoItemsView = (todoController, rootElement) => {
 
         todo.onTextChanged(() => inputElement.value = todo.getText());
 
+        /* FIXME changes start */
+        todo.onTextDirtyChanged((dirty) => {
+            dirty
+                ? inputElement.classList.add("dirty")
+                : inputElement.classList.remove("dirty")
+        });
+        /* FIXME changes end */
+
         todo.onTextValidChanged(
             valid => valid
               ? inputElement.classList.remove("invalid")
@@ -125,6 +153,7 @@ const TodoTotalView = (todoController, numberOfTasksElement) => {
     todoController.onTodoRemove(render);
 };
 
+
 const TodoOpenView = (todoController, numberOfOpenTasksElement) => {
 
     const render = () =>
@@ -138,3 +167,33 @@ const TodoOpenView = (todoController, numberOfOpenTasksElement) => {
     });
     todoController.onTodoRemove(render);
 };
+
+
+
+/* FIXME changes start */
+const TodoDetailView = (todoController, detailContainer) => {
+    const [textElement, checkboxElement, saveElement, resetElement] = detailContainer.children;
+    const render = todo => {
+        // disable input elements when todo undefined
+        [...detailContainer.children].forEach(child => child.disabled = !todo);
+        if (!todo) return;
+
+
+        checkboxElement.onclick = _ => todo.setDone(checkboxElement.checked);
+        textElement.oninput = _ => todo.setText(textElement.value);
+
+        todo.onTextChanged(() => textElement.value = todo.getText());
+        todo.onTextValidChanged(
+            valid => valid
+                ? textElement.classList.remove("invalid")
+                : textElement.classList.add("invalid")
+        );
+    };
+
+    // binding
+
+    todoController.onSelectedTodoChange(render);
+
+    // we do not expose anything as the view is totally passive.
+};
+/* FIXME changes end */
