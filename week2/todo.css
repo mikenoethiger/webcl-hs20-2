@@ -3,11 +3,14 @@ body {
     font-family:    "Helvetica Neue", sans-serif;
 }
 main {
-    max-width:  40em;
+    min-width:  50em;
+	max-width:  68em;
     margin:     auto;
     padding:    2em;
     box-shadow: 0 4px  8px 0 rgba(0, 0, 0, 0.2),
                 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	min-height: 20em;
+	height: auto;
 }
 h1 {
     font-family: "Comic Sans MS", cursive, sans-serif;
@@ -61,5 +64,8 @@ label.selected {
 }
 label.invalid {
     color: red;
+}
+span.bb {
+	font-weight: bold;
 }
 /* FIXME changes end */

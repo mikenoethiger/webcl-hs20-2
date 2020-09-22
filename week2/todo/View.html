@@ -10,23 +10,27 @@
 <main>
     <h1>Todo List</h1>
 
-    <div class="holder">
-        <button id="plus" autofocus> + </button>
-        <button id="fortune"> fortune! </button>
+	<div style="width:40em;float:" class="holder">
+			<button id="plus" autofocus> + </button>
+			<button id="fortune"> fortune! </button>
 
-        <div class="table" id="todoContainer"></div>
+			<div class="table" id="todoContainer"></div>
 
+			<div>Tasks: <span id="numberOfTasks">0</span></div>
+			<div>Open:  <span id="openTasks"    >0</span></div>
+	</div>
+	
+	<div style="width: 32em; float:right; padding-left:1em; border:1px solid black;" >
         <!-- FIXME changes start -->
         <div class="table" id="detailContainer">
-            <label>Title</label>
-            <input type="text" size="42" id="todoText" placeholder="E.g. cleaning desks">
-            <button id="todoSave">save</button>
-            <button id="todoReset">reset</button>
+            <label for="todoText">Title</label>
+            <input type="text" size="42" id="todoText" placeholder="E.g. cleaning desks"/> <br/>
+            <div><button id="todoSave">save</button> <button id="todoReset">reset</button> </div>
         </div>
         <!-- FIXME changes end -->
+	</div>
 
-        <div>Tasks: <span id="numberOfTasks">0</span></div>
-        <div>Open:  <span id="openTasks"    >0</span></div>
+
 
     </div>
 </main>
