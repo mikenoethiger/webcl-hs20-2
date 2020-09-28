@@ -21,11 +21,12 @@ const TodoController = () => {
             onDoneChanged:      doneAttr.valueObs.onChange,
             getText:            textAttr.valueObs.getValue,
             setText:            textAttr.setConvertedValue,
-			getCreationDate:	cdate.valueObs.getValue,
-			setCreationDate:	cdate.setConvertedValue,
             onTextChanged:      textAttr.valueObs.onChange,
             onTextValidChanged: textAttr.validObs.onChange,
             /* FIXME changes start */
+            getCreationDate:	cdate.valueObs.getValue,
+            setCreationDate:	cdate.setConvertedValue,
+            onCreationDateChanged: cdate.valueObs.onChange,
             isTextDirty:        textAttr.dirtyObs.getValue,
             onTextDirtyChanged: textAttr.dirtyObs.onChange,
             saveText:           textAttr.saveValue,
@@ -35,7 +36,10 @@ const TodoController = () => {
     };
 
     const todoModel = ObservableList([]); // observable array of Todos, this state is private
+    /* FIXME changes start */
     const selectedTodoModel = Observable();
+    /* FIXME changes end */
+
     const scheduler = Scheduler();
 
 	const getDateString = () => new Date().toLocaleDateString() + ' ('+new Date().toLocaleString('en-us', {weekday:'long'}) + ')';
@@ -59,6 +63,9 @@ const TodoController = () => {
         scheduler.add( ok =>
            fortuneService( text => {
                    newTodo.setText(text);
+                   /* FIXME changes start */
+                   newTodo.saveText();
+                   /* FIXME changes end */
                    ok();
                }
            )
@@ -84,8 +91,10 @@ const TodoController = () => {
         onTodoAdd:          todoModel.onAdd,
         onTodoRemove:       todoModel.onDel,
         removeTodoRemoveListener: todoModel.removeDeleteListener, // only for the test case, not used below
+        /* FIXME changes start */
         setSelectedTodo:    selectedTodoModel.setValue,
         onSelectedTodoChange: selectedTodoModel.onChange
+        /* FIXME changes end */
     }
 };
 
@@ -123,13 +132,17 @@ const TodoItemsView = (todoController, rootElement) => {
         todo.onTextChanged(() => labelElement.innerText = todo.getText());
 
         /* FIXME changes start */
+        // emphasize dirty todo
         todo.onTextDirtyChanged((dirty) => {
             dirty
                 ? labelElement.classList.add("dirty")
                 : labelElement.classList.remove("dirty")
         });
 
+        // select todo onclick
         labelElement.onclick = () => todoController.setSelectedTodo(todo);
+
+        // emphasize selected todo
         todoController.onSelectedTodoChange(selectedTodo => {
             todo === selectedTodo
                 ? labelElement.classList.add("selected")
@@ -142,8 +155,6 @@ const TodoItemsView = (todoController, rootElement) => {
               ? labelElement.classList.remove("invalid")
               : labelElement.classList.add("invalid")
         );
-
-
 
         rootElement.appendChild(deleteButton);
         rootElement.appendChild(labelElement);
@@ -188,31 +199,31 @@ const TodoOpenView = (todoController, numberOfOpenTasksElement) => {
 /* FIXME changes start */
 const TodoDetailView = (todoController, detailContainer) => {
 
-	
 	const dateElement = document.getElementById("creationDateDetail");
 	const saveElement = document.getElementById("saveBtn");
 	const resetElement = document.getElementById("resetBtn");
 	const inputElement = document.getElementById("todoText");
-	const chkbox = document.getElementById("chkbox");	
-	
-
-	console.log(detailContainer.childNodes);
 
     const render = todo => {
-        // disable input elements when todo undefined
+        // disable input elements when no todo selected
         [...detailContainer.children].forEach(child => child.disabled = !todo);
+        // reset form when no todo selected
         if (!todo) {
             inputElement.value = "";
 			dateElement.value = "";
             return;
         }
 
+        // update todo text
         inputElement.oninput = _ => todo.setText(inputElement.value);
-
+        // creation date read onnly
 		dateElement.value = todo.getCreationDate();
 		
-
+        // update UI on model changes
         todo.onTextChanged(() => inputElement.value = todo.getText());
+        todo.onCreationDateChanged(() => dateElement.value = todo.getCreationDate());
+
+        // emphasize invalid todo
         todo.onTextValidChanged(
             valid => {
                 valid
@@ -221,6 +232,7 @@ const TodoDetailView = (todoController, detailContainer) => {
                 saveElement.disabled = !valid;
             }
         );
+        // emphasize dirty todo
         todo.onTextDirtyChanged(dirty => {
             saveElement.disabled = !dirty;
             resetElement.disabled = !dirty;
@@ -231,7 +243,6 @@ const TodoDetailView = (todoController, detailContainer) => {
     };
 
     // binding
-
     todoController.onSelectedTodoChange(render);
 
     // we do not expose anything as the view is totally passive.

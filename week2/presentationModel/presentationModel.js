@@ -6,10 +6,10 @@ export { Attribute }
 
 const Attribute = value => {
 
-    let persistedValue = value;
     const valueObs = Observable(value);
     const validObs = Observable(true);
     /* FIXME changes start */
+    let persistedValue = value;
     const dirtyObs = Observable(false);
     /* FIXME changes end */
 
