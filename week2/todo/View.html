@@ -5,18 +5,44 @@
     <title>Todos</title>
     <link rel="stylesheet" href="../todo.css">
 </head>
+
 <body>
+
 
 <main>
     <h1>Todo List</h1>
-    <div class="holder">
-        <button id="plus" autofocus> + </button>
-        <button id="fortune"> fortune! </button>
 
-        <div class="table" id="todoContainer"></div>
+    <div>
+        <div style="width:30em; float:left;" class="holder">
+            <button id="plus" autofocus> +</button>
+            <button id="fortune"> fortune!</button>
 
-        <div>Tasks: <span id="numberOfTasks">0</span></div>
-        <div>Open:  <span id="openTasks"    >0</span></div>
+            <div class="table" id="todoContainer"></div>
+
+            <div>Tasks: <span id="numberOfTasks">0</span></div>
+            <div>Open: <span id="openTasks">0</span></div>
+        </div>
+
+        <div style="width: 32em; float:right; padding-left:1em; border:1px solid black;">
+            <!-- FIXME changes start -->
+
+            <div class="table" id="detailContainer">
+                <label>Title</label>
+                <input type="text" size="42" id="todoText" placeholder="E.g. cleaning desks"/>
+                <label>Created</label>
+                <input type="text" id="creationDateDetail" readonly placeholder="E.g. 1.1.2011"/>
+
+                <div>
+                    <button id="saveBtn">save</button>
+                    <button id="resetBtn">reset</button>
+                </div>
+
+            </div>
+            <!-- FIXME changes end -->
+        </div>
+    </div>
+
+
     </div>
 </main>
 

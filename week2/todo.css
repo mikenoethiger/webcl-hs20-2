@@ -3,18 +3,21 @@ body {
     font-family:    "Helvetica Neue", sans-serif;
 }
 main {
-    max-width:  40em;
+    min-width:  50em;
+	max-width:  68em;
     margin:     auto;
     padding:    2em;
     box-shadow: 0 4px  8px 0 rgba(0, 0, 0, 0.2),
                 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+	min-height: 20em;
+	height: auto;
 }
 h1 {
     font-family: "Comic Sans MS", cursive, sans-serif;
     text-align: center;
 }
 .holder {
-    margin: 0 3em 0 3em;
+    
 }
 input[type=text] {
     font-family:    "Comic Sans MS", cursive, sans-serif;
@@ -45,3 +48,30 @@ input[type=text]:focus {
 input.invalid {
     color: red;
 }
+
+/* FIXME changes start */
+#detailContainer {
+	display: grid;
+	grid-template-columns: 2fr;
+	grid-gap: .3em 1em;
+	padding-bottom: 2em;
+}
+
+label {
+	width: 20em;
+	overflow: hidden;
+}
+ 
+label.dirty {
+    font-style: italic;
+}
+label.selected {
+    font-weight: bold;
+}
+label.invalid {
+    color: red;
+}
+span.bb {
+	font-weight: bold;
+}
+/* FIXME changes end */
